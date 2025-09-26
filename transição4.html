@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Memory - Nível Impossível</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        body {
+            background: black;
+            color: #FF0000;
+            font-family: 'Press Start 2P', cursive;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #text-container {
+            font-size: 24px;
+            max-width: 80%;
+            min-height: 100px;
+            text-shadow: 0px 0px 20px red;
+            opacity: 0;
+            transition: opacity 1s ease-out;
+        }
+
+        #play-button {
+            display: none;
+            background: white;
+            color: black;
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: 'Press Start 2P', cursive;
+            animation: shake 0.5s infinite alternate;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(-2px); }
+            100% { transform: translateX(2px); }
+        }
+
+        .flash {
+            animation: flashScreen 0.2s ease-in-out;
+        }
+
+        @keyframes flashScreen {
+            0% { background-color: white; }
+            100% { background-color: black; }
+        }
+
+        .lightning {
+            position: absolute;
+            width: 4px;
+            height: 100vh;
+            background: white;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="text-container"></div>
+    <button id="play-button" onclick="startGame()">JOGAR</button>
+    <audio id="thunder-sound" src="thunder.mp3" preload="auto"></audio>
+    <audio id="scary-voice" src="scary-voice.mp3" preload="auto"></audio>
+
+    <script>
+        const messages = [
+            "Bem-vindo ao nível impossível...",
+            "Você realmente acha que pode vencer isso? HAHAHA!",
+            "A cada 20 segundos, tudo muda... você aguenta?",
+            "O tempo está contra você! Corra... ou perca!",
+            "Boa sorte... ou talvez... não!"
+        ];
+        
+        let index = 0;
+        let textContainer = document.getElementById("text-container");
+        let playButton = document.getElementById("play-button");
+        let thunderSound = document.getElementById("thunder-sound");
+        let scaryVoice = document.getElementById("scary-voice");
+        
+        function typeMessage(message, callback) {
+            let i = 0;
+            textContainer.innerHTML = "";
+            textContainer.style.opacity = 1;
+            let interval = setInterval(() => {
+                textContainer.innerHTML += message[i];
+                i++;
+                if (i === message.length) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        textContainer.style.opacity = 0;
+                        callback();
+                    }, 1500);
+                }
+            }, 70);
+        }
+        
+        function showNextMessage() {
+            if (index < messages.length) {
+                playThunder();
+                setTimeout(() => {
+                    typeMessage(messages[index], () => {
+                        index++;
+                        showNextMessage();
+                    });
+                }, 500);
+            } else {
+                playButton.style.display = "block";
+            }
+        }
+
+        function startGame() {
+            document.body.classList.add("flash");
+            playThunder();
+            setTimeout(() => {
+                window.location.href = "impossivel.html";
+            }, 1000);
+        }
+        
+        function playThunder() {
+            thunderSound.play();
+            document.body.classList.add("flash");
+            setTimeout(() => document.body.classList.remove("flash"), 200);
+        }
+
+        function addLightningEffect() {
+            let lightning = document.createElement("div");
+            lightning.classList.add("lightning");
+            lightning.style.left = Math.random() * window.innerWidth + "px";
+            lightning.style.transform = `rotate(${Math.random() * 60 - 30}deg)`;
+            document.body.appendChild(lightning);
+            lightning.style.opacity = 1;
+            setTimeout(() => { lightning.style.opacity = 0; }, 100);
+            setTimeout(() => { document.body.removeChild(lightning); }, 500);
+        }
+
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                addLightningEffect();
+                playThunder();
+            }
+        }, 3000);
+
+        showNextMessage();
+    </script>
+</body>
+</html>

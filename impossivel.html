@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Memory - Nível Impossível</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.0.1"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        /* Efeito de fade-in */
+        #fade-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 999;
+            opacity: 1;
+            transition: opacity 2s ease-in-out;
+        }
+
+        body {
+            background: url('./images/fundo2.png') no-repeat center center fixed;
+            background-size: cover;
+            color: #F2F2F2;
+            text-align: center;
+            height: 100vh;
+            font-family: 'Press Start 2P', cursive;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-container {
+            background: rgba(28, 28, 28, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(13, 100px);
+            grid-gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            perspective: 1000px;
+        }
+
+        .card {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(145deg, #232323, #1a1a1a);
+            border: 2px solid #8C8C8C;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s, box-shadow 0.3s;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg) translateZ(10px);
+        }
+
+        .card .front, .card .back {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .card .front {
+            transform: rotateY(180deg);
+        }
+
+        .back {
+            background: #000;
+            background-size: cover;
+            color: #00FF00;
+        }
+
+        #win-message, #lose-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #FFD700;
+            padding: 30px;
+            font-size: 1.5rem;
+            color: #000;
+            border: 5px solid #FF4500;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        #win-message p, #lose-message p {
+            margin-bottom: 15px;
+        }
+
+        #win-message button, #lose-message button {
+            background: #FF4500;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #sound-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        #sound-button img {
+            width: 40px;
+            height: 40px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="fade-layer"></div>
+
+    <h1 style="color: yellow;">Impossível</h1>
+    <p id="timer">Tempo: 500s</p>
+    
+    <div class="game-container">
+        <div class="game-board" id="game-board"></div>
+        <button class="btn btn-warning mt-3 back-button" id="back-button">Voltar</button>
+    </div>
+
+    <div id="win-message">
+        <p>🎉 Parabéns! Você venceu o desafio! 🎮</p>
+        <p>Tempo final: <span id="final-time"></span></p>
+        <button id="back-to-home-button">Voltar ao início</button>
+    </div>
+
+    <div id="lose-message">
+        <p>⏰ Tempo esgotado! Você perdeu o jogo! 😔</p>
+        <button id="retry-button"><a href="impossivel.html" class="btn btn-warning">Tentar novamente</a></button>
+    </div>
+
+    <button id="sound-button">
+        <img src="images/nota-musical.png" alt="Som" id="sound-icon">
+    </button>
+
+    <audio id="background-music" loop>
+        <source src="images/music1.MP3" type="audio/mp3">
+        <source src="images/music1.ogg" type="audio/ogg">
+        Seu navegador não suporta a tag de áudio.
+    </audio>
+
+    <script>
+        window.onload = function () {
+            setTimeout(() => {
+                document.getElementById("fade-layer").style.opacity = "0";
+                setTimeout(() => {
+                    document.getElementById("fade-layer").style.display = "none";
+                }, 2000);
+            }, 500);
+        };
+
+        const board = document.getElementById("game-board");
+        const images = [
+            "img1.png", "img2.png", "img3.png", "img4.png", "img5.png", "img6.png", "img7.png", "cap8.png",
+            "cap9.png", "cap10.png", "cap11.png", "cap12.png", "cap13.png", "cap14.png", "cap15.png", "cap16.png",
+            "cap17.png", "cap18.png", "cap19.png", "cap20.png", "cap21.png", "cap22.png", "cap23.png", "cap24.png",
+            "cap25.png", "cap26.png"
+        ];
+
+        let cards = images.concat(images);  // Duplicando as imagens para o jogo (26 pares, totalizando 52 cartas)
+        let firstCard = null;
+        let secondCard = null;
+        let lockBoard = false;
+        let matches = 0;
+        let time = 500; // 3 minutos (180 segundos)
+        let timerInterval;
+        let musicPlaying = true;
+        let flippedCards = [];
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                time--;
+                document.getElementById("timer").textContent = `Tempo: ${time}s`;
+                if (time <= 0) {
+                    clearInterval(timerInterval);
+                    showLoseMessage();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            document.getElementById("final-time").textContent = `${500 - time}s`;
+        }
+
+        function showLoseMessage() {
+            document.getElementById("lose-message").style.display = "block";
+        }
+
+        function celebrateWin() {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+
+        function checkMatch() {
+            if (firstCard.dataset.image === secondCard.dataset.image) {
+                firstCard = null;
+                secondCard = null;
+                matches++;
+                flippedCards.push(firstCard, secondCard);
+                if (matches === 26) {  // Verifica se todos os pares foram encontrados (26 pares)
+                    stopTimer();
+                    document.getElementById("win-message").style.display = "block";
+                    celebrateWin();
+                }
+            } else {
+                lockBoard = true;
+                setTimeout(() => {
+                    firstCard.classList.remove("flipped");
+                    secondCard.classList.remove("flipped");
+                    firstCard = null;
+                    secondCard = null;
+                    lockBoard = false;
+                }, 1000);
+            }
+        }
+
+        function flipCard() {
+            if (lockBoard || this === firstCard) return;
+            this.classList.add("flipped");
+            if (!firstCard) {
+                firstCard = this;
+                return;
+            }
+            secondCard = this;
+            checkMatch();
+        }
+
+        function shuffleCards() {
+            let unflippedCards = Array.from(document.querySelectorAll('.card')).filter(card => !flippedCards.includes(card));
+            unflippedCards.forEach(card => card.classList.remove("flipped"));
+            cards.sort(() => 0.5 - Math.random());
+            unflippedCards.forEach((card, index) => {
+                card.style.order = index;
+            });
+        }
+
+        function initGame() {
+            cards.sort(() => 0.5 - Math.random());
+            board.innerHTML = "";
+            cards.forEach((img, index) => {
+                let card = document.createElement("div");
+                card.classList.add("card");
+                card.dataset.image = img;
+                let front = document.createElement("div");
+                front.classList.add("front");
+                front.innerHTML = `<img src="images/${img}" width="80" height="80">`;
+                let back = document.createElement("div");
+                back.classList.add("back");
+                back.textContent = index + 1;
+                card.appendChild(front);
+                card.appendChild(back);
+                card.addEventListener("click", flipCard);
+                board.appendChild(card);
+            });
+            startTimer();
+
+            setInterval(() => {
+                if (matches < 26) {
+                    shuffleCards();
+                }
+            }, 20000); // Embaralha as cartas a cada 20 segundos
+        }
+
+        function fadeOutAndGoHome() {
+            document.getElementById("fade-layer").style.opacity = "1";
+            setTimeout(() => {
+                window.location.href = 'index.html'; // Redireciona para a página inicial após o fade
+            }, 2000);
+        }
+
+        document.getElementById("back-to-home-button").addEventListener("click", fadeOutAndGoHome);
+
+        function toggleMusic() {
+            const music = document.getElementById("background-music");
+            const soundIcon = document.getElementById("sound-icon");
+            if (musicPlaying) {
+                music.pause();
+                soundIcon.src = "images/sem-musica.png"; 
+            } else {
+                music.play();
+                soundIcon.src = "images/nota-musical.png"; 
+            }
+            musicPlaying = !musicPlaying;
+        }
+
+        document.getElementById("sound-button").addEventListener("click", toggleMusic);
+
+        document.getElementById("background-music").play();
+
+        initGame();
+
+        let shuffleInterval;
+
+function shuffleCards() {
+    // Filtra apenas as cartas que não estão viradas
+    const unflippedCards = Array.from(document.querySelectorAll('.card')).filter(card => !card.classList.contains('flipped'));
+    
+    // Embaralha as cartas não viradas
+    const shuffledCards = unflippedCards.sort(() => 0.5 - Math.random());
+
+    // Reorganiza as cartas no jogo
+    shuffledCards.forEach((card, index) => {
+        const cardParent = card.parentNode;
+        cardParent.appendChild(card); // Move a carta para a nova posição
+    });
+}
+
+function startShuffleTimer() {
+    shuffleInterval = setInterval(() => {
+        shuffleCards(); // Embaralha as cartas não viradas a cada 20 segundos
+    }, 20000); // 20 segundos
+}
+
+function stopShuffleTimer() {
+    clearInterval(shuffleInterval); // Para o embaralhamento quando o jogo termina
+}
+
+function initGame() {
+    cards.sort(() => 0.5 - Math.random());
+    board.innerHTML = "";
+    cards.forEach((img, index) => {
+        let card = document.createElement("div");
+        card.classList.add("card");
+        card.dataset.image = img;
+        let front = document.createElement("div");
+        front.classList.add("front");
+        front.innerHTML = `<img src="images/${img}" width="80" height="80">`;
+        let back = document.createElement("div");
+        back.classList.add("back");
+        back.textContent = index + 1;  // Número na parte de trás da carta
+        card.appendChild(front);
+        card.appendChild(back);
+        card.addEventListener("click", flipCard);
+        board.appendChild(card);
+    });
+    startTimer();
+    startShuffleTimer(); // Inicia o timer de embaralhamento
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
+    document.getElementById("final-time").textContent = `${500 - time}s`;
+}
+
+function checkMatch() {
+    if (firstCard.dataset.image === secondCard.dataset.image) {
+        firstCard = null;
+        secondCard = null;
+        matches++;
+        if (matches === 26) {
+            stopTimer();
+            stopShuffleTimer(); // Para o embaralhamento quando o jogo terminar
+            document.getElementById("win-message").style.display = "block";
+            celebrateWin();
+        }
+    } else {
+        lockBoard = true;
+        setTimeout(() => {
+            firstCard.classList.remove("flipped");
+            secondCard.classList.remove("flipped");
+            firstCard = null;
+            secondCard = null;
+            lockBoard = false;
+        }, 1000);
+    }
+}
+
+
+// O restante do código permanece igual
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Memory - Introdução</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        body {
+            background: black;
+            color: #FF0000; /* Cor alterada para vermelho para o nível difícil */
+            font-family: 'Press Start 2P', cursive;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        #text-container {
+            font-size: 24px;
+            max-width: 80%;
+            min-height: 100px;
+        }
+        
+        #play-button {
+            display: none;
+            background: white;
+            color: black;
+            border: 2px solid #FF0000; /* Borda vermelha para combinar com o tema difícil */
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: 'Press Start 2P', cursive;
+        }
+        
+        #play-button:hover {
+            background: #FF0000;
+            color: black;
+        }
+        
+        .fade-out {
+            animation: fadeOut 1s forwards;
+        }
+        
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="text-container"></div>
+    <button id="play-button" onclick="startGame()">JOGAR</button>
+
+    <script>
+        const messages = [
+            "Este é o nível difícil... Prepare-se para o desafio!",
+            "Neste nível, o jogo tem 52 cartas... O dobro da dificuldade!",
+            "A pressa é inimiga da perfeição... Mas o tempo está correndo!",
+            "Você tem apenas 500 segundos para completar a missão! Boa sorte!",
+            "Este não será fácil! Só os melhores irão conseguir!"
+        ];
+        let index = 0;
+        let textContainer = document.getElementById("text-container");
+        let playButton = document.getElementById("play-button");
+        
+        function typeMessage(message, callback) {
+            let i = 0;
+            textContainer.innerHTML = "";
+            let interval = setInterval(() => {
+                textContainer.innerHTML += message[i];
+                i++;
+                if (i === message.length) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        textContainer.classList.add("fade-out");
+                        setTimeout(() => {
+                            textContainer.classList.remove("fade-out");
+                            callback();
+                        }, 1000);
+                    }, 1000);
+                }
+            }, 70); // Velocidade de digitação ajustada para 70ms por caractere
+        }
+        
+        function showNextMessage() {
+            if (index < messages.length) {
+                typeMessage(messages[index], () => {
+                    index++;
+                    showNextMessage();
+                });
+            } else {
+                playButton.style.display = "block";
+            }
+        }
+        
+        function startGame() {
+            document.body.style.transition = "opacity 1s ease-out";
+            document.body.style.opacity = "0";
+            setTimeout(() => {
+                window.location.href = "dificil.html"; // Mudando para a página de nível difícil
+            }, 1000);
+        }
+        
+        showNextMessage();
+    </script>
+</body>
+</html>
